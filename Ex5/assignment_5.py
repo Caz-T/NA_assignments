@@ -31,20 +31,14 @@ def is_quasi_upper(matrix, threshold=0.05):
     return True
 
 
-def basic_qr(matrix, verbose=False):
-    threshold = 0.05
-    while not is_quasi_upper(matrix, threshold):
-        q, r = np.linalg.qr(matrix)
-        matrix = r * q
-        if verbose:
-            print(matrix)
+def get_eigvals_from_quasi(matrix, threshold):
+    # compute eigenvalues based on diagonal elements/2-dim blocks
 
     def get_dim2_eig(m):
         assert m.shape[0] == m.shape[1] == 2
         dt = np.sqrt(np.float_power(m[0, 0] - m[1, 1], 2) + 4.0 * m[1, 0] * m[0, 1])
         return [(m[0, 0] + m[1, 1] + dt) / 2, (m[0, 0] + m[1, 1] - dt) / 2]
 
-    # compute eigenvalues based on diagonal elements/2-dim blocks
     evs = []
     i = 0
     while i < matrix.shape[0]:
@@ -61,37 +55,29 @@ def basic_qr(matrix, verbose=False):
     return evs
 
 
-def shifted_qr(matrix):
+def basic_qr(matrix, verbose=False):
+    threshold = 0.05
+    while not is_quasi_upper(matrix, threshold):
+        q, r = np.linalg.qr(matrix)
+        matrix = r * q
+        if verbose:
+            print(matrix)
 
-    def householder(m):
-        # this Householder transformation yields a tri-diagonal matrix
-        dim = m.shape[0]
-        for i in range(1, dim):
-            v = m[:, i].copy()
-            for j in range(i):
-                v[j, 0] = 0.0
-            v[i, 0] += np.linalg.norm(v, 1)
-            v /= np.linalg.norm(v, 1)
-            householder_matrix = np.identity(dim) - 2 * v * v.transpose()
-            m = householder_matrix * m
-        return m
+    return get_eigvals_from_quasi(matrix, threshold)
 
-    def givens(m, x, y):
-        to_ret = np.identity(m.shape[0])
-        c = m[x, x] / (m[x, x] ** 2 + m[y, x] ** 2)
-        s = m[y, x] / (m[x, x] ** 2 + m[y, x] ** 2)
-        to_ret[x, x] = to_ret[y, y] = c
-        to_ret[x, y] = to_ret[y, x] = s
-        return to_ret
 
-    matrix = householder(matrix)
-    k = matrix.shape[0] - 1
-    while k > 0 and matrix[k, k - 1] != 0:
-        s = matrix[k, k]
-        for j in range(k):
-            matrix[j, j] -= s
-        givens_mats = [givens(matrix, j, i) for j in range(k) for i in range(j + 1, k)]
-        # TODO
+def shifted_qr(matrix, verbose=False):
+    threshold = 0.05
+    assert matrix.shape[0] == matrix.shape[1]
+    dim = matrix.shape[0]
+    while not is_quasi_upper(matrix, threshold):
+        s = matrix[dim - 1, dim - 1]
+        q, r = np.linalg.qr(matrix - s * np.identity(dim))
+        matrix = r * q + s * np.identity(dim)
+        if verbose:
+            print(matrix)
+
+    return get_eigvals_from_quasi(matrix, threshold)
 
 
 if __name__ == '__main__':
@@ -126,4 +112,5 @@ if __name__ == '__main__':
     # print("Basic-QR yields eigenvalues {}".format(evs))
 
     # Section 3
-    # TODO
+    evs = shifted_qr(a, True)
+    print("Shifting-QR yields eigenvalues {}".format(evs))
