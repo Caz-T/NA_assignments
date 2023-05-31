@@ -40,16 +40,13 @@ def solve_hilbert_system(dim, disturb=None):
 
 if __name__ == '__main__':
     # Part 1: n = 10
-    res_1, delta_x_1 = solve_hilbert_system(10)
-    print(res_1, delta_x_1)
+    print(solve_hilbert_system(10))
 
     # Part 2: add disturbance
-    disturbance = np.ones((10, 1))
-    disturbance[2, 0] += np.float_power(10, -7)
-    res_2, delta_x_2 = solve_hilbert_system(10, disturbance)
-    print(res_2, delta_x_2)
+    results = [solve_hilbert_system(10, np.random.rand(10, 1) * np.float_power(10, -7)) for _ in range(100)]
+    print(tuple(np.mean(list(u[i] for u in results)) for i in range(2)))
 
     # Part 3: varying dimensions
-    result = [solve_hilbert_system(d) for d in [8, 12, 14]]
+    result = [solve_hilbert_system(d) for d in [8, 12, 13, 14]]
     print(result)
 
