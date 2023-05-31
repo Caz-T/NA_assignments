@@ -25,7 +25,7 @@ def section_1():
     plt.plot([np.float_power(10, -17), np.float_power(10, 1)], [np.float_power(10, 0), np.float_power(10, -17)], "b:,")
     plt.plot([np.float_power(10, -17), np.float_power(10, 1)], [np.float_power(10, -17), np.float_power(10, 1)], "b:,")
     plt.title("Error margin of sin'(x)")
-    plt.savefig('1_1.png')
+    plt.savefig('./Ex1/images/1_1.png')
     plt.close()
 
 
@@ -41,16 +41,17 @@ def section_2():
             break
         n += 1
     end_time = time.time()
-    print("{} single-precision iterations in {} seconds, yielding {:.6f}".format(n, end_time - start_time, ans))
+    print("{} single-precision iterations in {:.5f} seconds, yielding {:.6f}".format(n, end_time - start_time, ans))
 
     double_ans = np.float_(0)
     for i in tqdm(range(n - 1)):
         double_ans += np.float_(1.0 / (i + 1))
-    print("Double precision calculations yield {:.6f}".format(double_ans))
+    print("Double precision calculations yield {:.6f} in {:.5f} seconds".format(double_ans, time.time() - end_time))
     print("Result difference: {}".format(double_ans - ans))
 
 
 if __name__ == '__main__':
+    section_1()
     section_2()
 
 
