@@ -58,8 +58,6 @@ def solve_hilbert_system(dim, disturb=None):
     std_vector = np.ones((dim, 1))
     rhs = std_vector if disturb is None else std_vector + disturb
     lower = cholesky(hilbert(dim))
-    # inv_lower = np.linalg.inv(lower)
-    # solution = inv_lower.transpose() * inv_lower * rhs
     solution = backward_substitution(lower.transpose(), forward_substitution(lower, rhs))
     residual = rhs - hilbert(dim) * solution
     return np.linalg.norm(residual, np.inf), np.linalg.norm(solution - std_vector, np.inf)
