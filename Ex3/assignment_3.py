@@ -24,12 +24,43 @@ def hilbert(n: int):
     return np.mat([[1.0 / (i + j) for j in range(n)] for i in range(1, n + 1)])
 
 
+def forward_substitution(l, b):
+    # Algorithm 3.7
+    dim = l.shape[0]
+    ans = np.zeros((dim, 1), dtype=np.float_)
+    for i in range(dim):
+        if l[i, i] == 0:
+            print("Error")
+            return None
+        ans[i, 0] = b[i, 0]
+        for j in range(i):
+            ans[i, 0] -= l[i, j] * ans[j, 0]
+        ans[i, 0] /= l[i, i]
+    return ans
+
+
+def backward_substitution(u, b):
+    # Algorithm 3.2
+    dim = u.shape[0]
+    ans = np.zeros((dim, 1), dtype=np.float_)
+    for i in range(dim - 1, -1, -1):
+        if u[i, i] == 0:
+            print("Error")
+            return None
+        ans[i, 0] = b[i, 0]
+        for j in range(dim - 1, i, -1):
+            ans[i, 0] -= u[i, j] * ans[j, 0]
+        ans[i, 0] /= u[i, i]
+    return ans
+
+
 def solve_hilbert_system(dim, disturb=None):
     std_vector = np.ones((dim, 1))
     rhs = std_vector if disturb is None else std_vector + disturb
     lower = cholesky(hilbert(dim))
-    inv_lower = np.linalg.inv(lower)
-    solution = inv_lower.transpose() * inv_lower * rhs
+    # inv_lower = np.linalg.inv(lower)
+    # solution = inv_lower.transpose() * inv_lower * rhs
+    solution = backward_substitution(lower.transpose(), forward_substitution(lower, rhs))
     residual = rhs - hilbert(dim) * solution
     return np.linalg.norm(residual, np.inf), np.linalg.norm(solution - std_vector, np.inf)
 
@@ -43,6 +74,8 @@ if __name__ == '__main__':
     print(tuple(np.mean(list(u[i] for u in results)) for i in range(2)))
 
     # Part 3: varying dimensions
-    result = [solve_hilbert_system(d) for d in [8, 12, 13, 14]]
-    print(result)
+    n_list = [8, 12, 13, 14]
+    result = [solve_hilbert_system(d) for d in n_list]
+    for i, res in enumerate(result):
+        print("N = {}: residual = {}, delta = {}".format(n_list[i], res[0], res[1]))
 
